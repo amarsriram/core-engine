@@ -515,19 +515,19 @@ input[type="number"] {
 
   /* ── Output: Full single-column stack ── */
   .output-layout {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto;
-    gap: 16px;
-    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* More breathing space */
+    padding: 16px 0 40px 0;
     height: auto;
     width: 100%;
     max-width: 100vw;
   }
 
   /* Order: Center → Left (scale) → Right (analysis) */
-  .panel-center { order: 1; width: 100%; }
-  .panel-left   { order: 2; display: flex; width: 100%; }
-  .panel-right  { order: 3; overflow-y: visible; max-height: none; padding: 20px; width: 100%; }
+  .panel-center { order: 1; width: 100%; grid-column: 1 / -1; margin-bottom: 8px; }
+  .panel-left   { order: 2; display: flex; width: 100%; grid-column: 1 / -1; margin-bottom: 8px; }
+  .panel-right  { order: 3; overflow-y: visible; max-height: none; padding: 24px; width: 100%; grid-column: 1 / -1; }
 
   /* Center hero: compress */
   .donut-container { width: 150px; height: 150px; }
