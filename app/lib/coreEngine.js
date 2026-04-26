@@ -206,46 +206,46 @@ export function runCoreEngine(input) {
     if (comp.name === "Energy") {
       if (bucket === 'weak') {
         type = 'poor';
-        text = `Energy imbalance is severe (${balance > 0 ? '+' : ''}${Math.round(balance)} kcal), disrupting metabolic stability`;
+        text = `Severe energy deviation suggests a high risk of metabolic friction, likely blunting progression.`;
       } else if (bucket === 'moderate') {
         type = 'average';
-        text = `Energy balance is moderate (${balance > 0 ? '+' : ''}${Math.round(balance)} kcal), could improve alignment with expenditure`;
+        text = `Moderate energy deviation appears to be manageable, though tighter alignment could improve efficiency.`;
       } else {
         type = 'good';
-        text = 'Energy balance is stable, supporting baseline metabolic function';
+        text = `Energy intake is well aligned with expenditure, supporting stable baseline function.`;
       }
     } else if (comp.name === "Recovery") {
       if (bucket === 'weak') {
         type = 'poor';
-        text = `Recovery is insufficient (${sleep}h sleep), limiting adaptation capacity`;
+        text = `Insufficient sleep duration likely bottlenecks adaptation, restricting tissue repair.`;
       } else if (bucket === 'moderate') {
         type = 'average';
-        text = `Recovery is adequate (${sleep}h sleep), but could restrict peak performance`;
+        text = `Current sleep volume appears adequate for baseline function, but may restrict peak adaptation.`;
       } else {
         type = 'good';
-        text = `Recovery is effective (${sleep}h sleep), supporting consistent adaptation`;
+        text = `Recovery patterns are highly effective, suggesting an optimized state for systemic adaptation.`;
       }
     } else if (comp.name === "Training") {
       if (bucket === 'weak') {
         type = 'poor';
-        text = `Training stimulus is insufficient (${workout} min), failing to trigger adaptation`;
+        text = `Sub-threshold mechanical stimulus fails to force adaptation, leading to systemic stagnation.`;
       } else if (bucket === 'moderate') {
         type = 'average';
-        text = `Training stimulus is moderate (${workout} min), restricting progression speed`;
+        text = `Moderate training load sustains current state, but appears insufficient for rapid progression.`;
       } else {
         type = 'good';
-        text = `Training stimulus is effective (${workout} min), driving systemic adaptation`;
+        text = `Mechanical stimulus is strong, driving effective hypertrophy and metabolic progression.`;
       }
     } else { // Consistency
       if (bucket === 'weak') {
         type = 'poor';
-        text = `Consistency is a bottleneck (${consistency}%), disrupting the biological feedback loop`;
+        text = `Frequent protocol deviation disrupts the biological feedback loop, rendering inputs ineffective.`;
       } else if (bucket === 'moderate') {
         type = 'average';
-        text = `Consistency is moderate (${consistency}%), limiting compounding adaptation`;
+        text = `Variable adherence limits compounding gains, suggesting a need for tighter execution.`;
       } else {
         type = 'good';
-        text = `Consistency is strong (${consistency}%), ensuring compounding biological gains`;
+        text = `Strict adherence ensures inputs compound effectively, maximizing long-term biological gains.`;
       }
     }
 
@@ -254,9 +254,9 @@ export function runCoreEngine(input) {
 
   // RULE 9: Force consistency into findings if <60 and not already limiter
   if (consistency < 60 && limiter.name !== "Consistency") {
-    const hasConsistency = findings.some(f => f.text.includes("Consistency"));
+    const hasConsistency = findings.some(f => f.text.includes("adherence") || f.text.includes("deviation"));
     if (!hasConsistency) {
-      findings.splice(1, 0, { type: 'poor', text: `Consistency is a bottleneck (${consistency}%), disrupting the biological feedback loop` });
+      findings.splice(1, 0, { type: 'poor', text: `Frequent protocol deviation disrupts the biological feedback loop, rendering inputs ineffective.` });
     }
   }
 
@@ -264,27 +264,39 @@ export function runCoreEngine(input) {
   const actions = [];
 
   if (limiter.name === "Energy") {
-    if (balance > 0) {
-      actions.push(`Reduce intake by ${Math.min(300, Math.max(150, Math.round(deviation / 3)))} kcal to align with expenditure`);
-    } else {
-      actions.push(`Increase intake by ${Math.min(300, Math.max(150, Math.round(deviation / 3)))} kcal to stabilize energy availability`);
-    }
+    if (balance > 0) actions.push(`Reduce caloric intake to align with daily expenditure and restore metabolic equilibrium.`);
+    else actions.push(`Increase caloric intake to prevent catabolism and restore baseline energy availability.`);
   } else if (limiter.name === "Recovery") {
-    actions.push('Increase sleep to 7–8 hours with a consistent pre-sleep routine');
+    actions.push(`Expand sleep window to 7–8 hours to restore central nervous system function and tissue repair.`);
   } else if (limiter.name === "Training") {
-    actions.push('Increase training intensity or volume to force deeper adaptation');
+    actions.push(`Increase structured training intensity or volume to restore biological progression stimulus.`);
   } else if (limiter.name === "Consistency") {
-    actions.push('Improve adherence to daily routine before adjusting other variables');
+    actions.push(`Strictly adhere to baseline protocol for 7 days to restore predictable biological feedback.`);
   }
 
-  // ── 13. CENTER PANEL TAGLINE (SCORE-LOCKED) ──
+  // ── 13. INSIGHT LAYER (System Summary + Limiter Impact) ──
   let tagline;
   if (score > 80) {
-    tagline = "System operating near optimal balance across inputs";
+    tagline = `System stable based on current pattern; minor friction from ${limiter.name.toLowerCase()} limits absolute peak.`;
   } else if (score >= 60) {
-    tagline = "System stable but not progressing efficiently";
+    tagline = `System stable but not progressing efficiently; ${limiter.name.toLowerCase()} bottleneck is actively restricting adaptation.`;
   } else {
-    tagline = "System underperforming due to critical bottlenecks";
+    tagline = `System underperforming due to critical bottlenecks; ${limiter.name.toLowerCase()} failure is driving systemic decline.`;
+  }
+
+  // ── OPTIONAL HIGH IMPACT: TREND & PREDICTION ──
+  let trend = "Stable";
+  let prediction = "If continued, expect compounding positive adaptation.";
+  
+  if (score > 75 && consistency > 80) {
+    trend = "Improving";
+    prediction = "If continued, expect accelerated physical progression.";
+  } else if (score < 50 || consistency < 60) {
+    trend = "Declining";
+    prediction = "If continued, expect further systemic degradation and fatigue.";
+  } else if (score >= 50 && score <= 75) {
+    trend = "Stagnant";
+    prediction = "If continued, expect no meaningful biological change.";
   }
 
   // ── 14. RETURN FINAL OUTPUT ──
@@ -294,10 +306,12 @@ export function runCoreEngine(input) {
       state,
       tagline,
       limiter: limiter.name,
-      confidence
+      confidence,
+      trend,
+      prediction
     },
     analysis,
-    findings,
+    findings: findings.slice(0, 3),
     actions
   };
 }

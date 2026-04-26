@@ -65,16 +65,15 @@ export default function Home() {
 
   const handleAnalyze = async () => {
     setProcessingState(1);
-    setStep('loading'); // Dedicated state to hide forms
-    setProcessingMessage('LOGGING BIOLOGICAL SIGNALS...');
-    setTimeout(() => setProcessingMessage('MAPPING METABOLIC LOAD...'), 800);
-    setTimeout(() => setProcessingMessage('ASSEMBLING ENGINE DIAGNOSIS...'), 1600);
+    setStep('loading'); 
+    setProcessingMessage('Analyzing signals...');
+    setTimeout(() => setProcessingMessage('Evaluating systems...'), 600);
     setTimeout(() => {
       const res = runCoreEngine(inputs);
       setResult(res);
       setStep(3);
       setProcessingState(0);
-    }, 2400);
+    }, 1200);
   };
 
   const reset = () => {
@@ -240,7 +239,7 @@ export default function Home() {
           </div>
 
           {/* CENTER PANEL: CORE STATE (HERO) */}
-          <div className="panel-center">
+          <div className="panel-center" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.1s', opacity: 0 }}>
             <div className="header-logo compact" style={{ marginBottom: 0 }}>CORE</div>
             
             <div className="donut-container" style={{ '--offset': 440 - (440 * result.summary.score) / 100 }}>
@@ -258,19 +257,20 @@ export default function Home() {
               <div className="hero-score" style={{ position: 'absolute' }}>{displayScore}</div>
             </div>
 
-            <div>
+            <div style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.3s', opacity: 0 }}>
               <div className="hero-state">{result.summary.state}</div>
               <p className="hero-tagline">{result.summary.tagline}</p>
             </div>
 
-            <div className="hero-trend" style={{ marginTop: '10px' }}>Primary Limiter: {result.summary.limiter}</div>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Confidence: {result.summary.confidence}</div>
+            <div className="hero-trend" style={{ marginTop: '10px', animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.4s', opacity: 0 }}>Primary Limiter: {result.summary.limiter}</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.1em', animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.5s', opacity: 0 }}>Confidence: {result.summary.confidence}</div>
+            <div style={{ fontSize: '12px', color: 'var(--accent)', marginTop: '12px', letterSpacing: '0.05em', animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.6s', opacity: 0 }}>{result.summary.prediction}</div>
           </div>
 
           {/* RIGHT PANEL: PROFESSIONAL ANALYSIS */}
           <div className="panel-right">
             
-            <div className="analysis-section" style={{ animationDelay: '0.1s' }}>
+            <div className="analysis-section" style={{ animationDelay: '0.5s' }}>
               <div className="section-title">System Analysis</div>
               <div className="sys-metric"><span className="sys-label">Energy</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.energy}</span></div>
               <div className="sys-metric"><span className="sys-label">Recovery</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.recovery}</span></div>
@@ -278,7 +278,7 @@ export default function Home() {
               <div className="sys-metric"><span className="sys-label">Consistency</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.consistency}</span></div>
             </div>
 
-            <div className="analysis-section" style={{ animationDelay: '0.2s' }}>
+            <div className="analysis-section" style={{ animationDelay: '0.7s' }}>
               <div className="section-title">Findings</div>
               {result.findings.map((finding, idx) => (
                 <div key={idx} className="finding-item">
@@ -288,7 +288,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="analysis-section" style={{ animationDelay: '0.3s', marginTop: 'auto' }}>
+            <div className="analysis-section" style={{ animationDelay: '0.9s', marginTop: 'auto' }}>
               <div className="section-title">Action</div>
               {result.actions.map((action, idx) => (
                 <div key={idx} className="action-item">{action}</div>
@@ -298,6 +298,11 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* VERSION FOOTER */}
+      <div style={{ position: 'absolute', bottom: '15px', fontSize: '10px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+        CORE v1.1
+      </div>
     </main>
   );
 }
