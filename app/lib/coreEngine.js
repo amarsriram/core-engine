@@ -4,12 +4,6 @@
 // LANGUAGE VARIANTS (SCORE-LOCKED)
 // ═══════════════════════════════════════════════════════
 
-// RULE 6: Language MUST match score bucket
-// <50  → weak / insufficient / limiting / bottleneck
-// 50-75 → moderate / adequate / could improve
-// >75  → strong / effective / well aligned
-// RULE 7: BANNED WORDS → perfect, fully, maximum, optimal (unless >85)
-
 const languageBank = {
   energy: {
     weak: [
@@ -66,16 +60,11 @@ const languageBank = {
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-// Map score to language bucket (STRICT — RULE 6)
 function scoreToBucket(score) {
   if (score < 50) return 'weak';
   if (score <= 75) return 'moderate';
   return 'strong';
 }
-
-// ═══════════════════════════════════════════════════════
-// 1. HARD NORMALIZATION (STRICT TABLES)
-// ═══════════════════════════════════════════════════════
 
 function normalizeEnergy(balance) {
   const dev = Math.abs(balance);
@@ -104,7 +93,6 @@ function normalizeTraining(workout) {
 }
 
 function normalizeConsistency(c) {
-  // Direct pass-through with floor
   if (c >= 90) return Math.min(100, c);
   if (c >= 75) return c;
   if (c >= 60) return c;
@@ -112,26 +100,19 @@ function normalizeConsistency(c) {
   return Math.max(10, c);
 }
 
-// ═══════════════════════════════════════════════════════
-// MAIN ENGINE
-// ═══════════════════════════════════════════════════════
-
 export function runCoreEngine(input) {
   const { weight, height, age, calories, workout, sleep, consistency } = input;
 
-  // Derived
   const bmr = (10 * weight) + (6.25 * height) - (5 * age) - 78;
   const totalBurn = (bmr * 1.2) + (workout * 7);
   const balance = calories - totalBurn;
   const deviation = Math.abs(balance);
 
-  // ── 1. COMPONENT SCORING (STRICT NORMALIZATION) ──
   const energyScore      = normalizeEnergy(balance);
   const recoveryScore    = normalizeRecovery(sleep);
   const trainingScore    = normalizeTraining(workout);
   const consistencyScore = normalizeConsistency(consistency);
 
-  // ── 2. WEIGHTED SCORE ──
   let score = Math.round(
     (energyScore      * 0.30) +
     (recoveryScore    * 0.25) +
@@ -139,33 +120,23 @@ export function runCoreEngine(input) {
     (consistencyScore * 0.20)
   );
 
-  // ── 3. HARD CONSTRAINTS (CRITICAL) ──
   const allScores = [energyScore, recoveryScore, trainingScore, consistencyScore];
   const minComponent = Math.min(...allScores);
 
-  // RULE 1: Failure cap
   if (minComponent < 50) score = Math.min(score, 75);
-
-  // RULE 2: Critical failure
   if (minComponent < 30) score = Math.min(score, 60);
-
-  // RULE 3: Extreme penalties
   if (deviation > 600) score = Math.max(0, score - 10);
   if (sleep < 5) score = Math.max(0, score - 10);
-
-  // RULE 9: Consistency hard impact
   if (consistency < 50) score = Math.max(0, score - 10);
 
   score = Math.max(0, Math.min(100, score));
 
-  // ── 4. STATE MAPPING (LOCKED) ──
   let state = "POOR";
   if (score >= 80) state = "OPTIMAL";
   else if (score >= 70) state = "GOOD";
   else if (score >= 60) state = "MAINTENANCE";
   else if (score >= 40) state = "LOW";
 
-  // ── 5. PRIMARY LIMITER (EXACT — MIN component) ──
   const components = [
     { name: "Energy",      score: energyScore },
     { name: "Recovery",    score: recoveryScore },
@@ -175,13 +146,10 @@ export function runCoreEngine(input) {
   components.sort((a, b) => a.score - b.score);
   const limiter = components[0];
 
-  // ── 11. CONFIDENCE SYSTEM ──
-  let confidence = "Low (inconsistent inputs)";
-  if (consistency >= 80) confidence = "High (consistent inputs)";
-  else if (consistency >= 60) confidence = "Medium (variable inputs)";
+  let confidence = "Low Protocol Confidence";
+  if (consistency >= 80) confidence = "High Protocol Confidence";
+  else if (consistency >= 60) confidence = "Medium Protocol Confidence";
 
-  // ── 6 & 12. SYSTEM ANALYSIS (SCORE-LOCKED LANGUAGE) ──
-  const eBucket = scoreToBucket(energyScore);
   const rBucket = scoreToBucket(recoveryScore);
   const tBucket = scoreToBucket(trainingScore);
 
@@ -189,16 +157,27 @@ export function runCoreEngine(input) {
   const energyReason = balance > 150 ? "intake exceeds expenditure" : balance < -150 ? "intake below expenditure" : "intake ≈ expenditure";
 
   const analysis = {
-    energy:      `${energyState} (${energyReason})`,
-    recovery:    pick(languageBank.recovery[rBucket]),
-    training:    pick(languageBank.training[tBucket]),
-    consistency: `${consistency}%`
+    energy: {
+      val: energyState,
+      explanation: energyReason
+    },
+    recovery: {
+      val: rBucket === 'strong' ? 'Well aligned' : rBucket === 'moderate' ? 'Stable' : 'Limiting',
+      explanation: pick(languageBank.recovery[rBucket]).split('(')[1]?.replace(')', '') || pick(languageBank.recovery[rBucket])
+    },
+    training: {
+      val: tBucket === 'strong' ? 'Effective' : tBucket === 'moderate' ? 'Adequate' : 'Insufficient',
+      explanation: pick(languageBank.training[tBucket]).split('(')[1]?.replace(')', '') || pick(languageBank.training[tBucket])
+    },
+    consistency: {
+      val: `${consistency}%`,
+      explanation: consistency >= 90 ? "elite adherence" : consistency >= 75 ? "stable execution" : "variable protocol compliance"
+    }
   };
 
-  // ── 8. FINDINGS ENGINE (ORDERED: weakest → strongest) ──
   const findings = [];
+  let greenCount = 0;
 
-  // Walk sorted components (ascending) and generate cause→effect findings
   for (const comp of components) {
     const bucket = scoreToBucket(comp.score);
     let type, text;
@@ -211,7 +190,8 @@ export function runCoreEngine(input) {
         type = 'average';
         text = `Moderate energy deviation appears to be manageable, though tighter alignment could improve efficiency.`;
       } else {
-        type = 'good';
+        type = greenCount < 2 ? 'good' : 'average';
+        if (type === 'good') greenCount++;
         text = `Energy intake is well aligned with expenditure, supporting stable baseline function.`;
       }
     } else if (comp.name === "Recovery") {
@@ -222,7 +202,8 @@ export function runCoreEngine(input) {
         type = 'average';
         text = `Current sleep volume appears adequate for baseline function, but may restrict peak adaptation.`;
       } else {
-        type = 'good';
+        type = greenCount < 2 ? 'good' : 'average';
+        if (type === 'good') greenCount++;
         text = `Recovery patterns are highly effective, suggesting an optimized state for systemic adaptation.`;
       }
     } else if (comp.name === "Training") {
@@ -233,7 +214,8 @@ export function runCoreEngine(input) {
         type = 'average';
         text = `Moderate training load sustains current state, but appears insufficient for rapid progression.`;
       } else {
-        type = 'good';
+        type = greenCount < 2 ? 'good' : 'average';
+        if (type === 'good') greenCount++;
         text = `Mechanical stimulus is strong, driving effective hypertrophy and metabolic progression.`;
       }
     } else { // Consistency
@@ -244,15 +226,14 @@ export function runCoreEngine(input) {
         type = 'average';
         text = `Variable adherence limits compounding gains, suggesting a need for tighter execution.`;
       } else {
-        type = 'good';
+        type = greenCount < 2 ? 'good' : 'average';
+        if (type === 'good') greenCount++;
         text = `Strict adherence ensures inputs compound effectively, maximizing long-term biological gains.`;
       }
     }
-
     findings.push({ type, text });
   }
 
-  // RULE 9: Force consistency into findings if <60 and not already limiter
   if (consistency < 60 && limiter.name !== "Consistency") {
     const hasConsistency = findings.some(f => f.text.includes("adherence") || f.text.includes("deviation"));
     if (!hasConsistency) {
@@ -260,9 +241,7 @@ export function runCoreEngine(input) {
     }
   }
 
-  // ── 10. ACTION ENGINE (DIRECT LIMITER → ACTION) ──
   const actions = [];
-
   if (limiter.name === "Energy") {
     if (balance > 0) actions.push(`Reduce caloric intake to align with daily expenditure and restore metabolic equilibrium.`);
     else actions.push(`Increase caloric intake to prevent catabolism and restore baseline energy availability.`);
@@ -274,7 +253,6 @@ export function runCoreEngine(input) {
     actions.push(`Strictly adhere to baseline protocol for 7 days to restore predictable biological feedback.`);
   }
 
-  // ── 13. INSIGHT LAYER (System Summary + Limiter Impact) ──
   let tagline;
   if (score > 80) {
     tagline = `System stable based on current pattern; minor friction from ${limiter.name.toLowerCase()} limits absolute peak.`;
@@ -284,22 +262,19 @@ export function runCoreEngine(input) {
     tagline = `System underperforming due to critical bottlenecks; ${limiter.name.toLowerCase()} failure is driving systemic decline.`;
   }
 
-  // ── OPTIONAL HIGH IMPACT: TREND & PREDICTION ──
-  let trend = "Stable";
+  let trend = "Stable Pattern";
   let prediction = "If continued, expect compounding positive adaptation.";
-  
   if (score > 75 && consistency > 80) {
-    trend = "Improving";
+    trend = "Improving Signal";
     prediction = "If continued, expect accelerated physical progression.";
   } else if (score < 50 || consistency < 60) {
-    trend = "Declining";
+    trend = "Declining State";
     prediction = "If continued, expect further systemic degradation and fatigue.";
   } else if (score >= 50 && score <= 75) {
-    trend = "Stagnant";
+    trend = "Stagnant Pattern";
     prediction = "If continued, expect no meaningful biological change.";
   }
 
-  // ── 14. RETURN FINAL OUTPUT ──
   return {
     summary: {
       score,
