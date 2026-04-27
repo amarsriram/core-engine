@@ -18,20 +18,7 @@ export default function Home() {
 
   useEffect(() => {
     if (step === 3 && result) {
-      let current = 0;
-      const target = result.summary.score;
-      const increment = target / (1000 / 16);
-      
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          setDisplayScore(target);
-          clearInterval(timer);
-        } else {
-          setDisplayScore(Math.floor(current));
-        }
-      }, 16);
-      return () => clearInterval(timer);
+      setDisplayScore(result.summary.score);
     }
   }, [step, result]);
 
@@ -212,34 +199,36 @@ export default function Home() {
           
           {/* LEFT PANEL: WHERE YOU STAND */}
           <div className="panel-left">
-            <h3 className="section-title">Where You Stand</h3>
+            <h3 className="section-title" style={{ border: 'none', marginBottom: '10px' }}>Where You Stand</h3>
             
             <div className={`scale-box ${result.summary.score >= 80 ? 'active excellent' : ''}`}>
-              <span className="scale-label">Optimal</span>
+              <span className="scale-label" style={{ color: result.summary.score >= 80 ? 'var(--success)' : '' }}>Optimal</span>
               <span className="scale-range">80–100</span>
             </div>
             <div className={`scale-box ${(result.summary.score >= 70 && result.summary.score < 80) ? 'active good' : ''}`}>
-              <span className="scale-label">Good</span>
+              <span className="scale-label" style={{ color: (result.summary.score >= 70 && result.summary.score < 80) ? 'var(--success)' : '' }}>Good</span>
               <span className="scale-range">70–80</span>
             </div>
             <div className={`scale-box ${(result.summary.score >= 60 && result.summary.score < 70) ? 'active moderate' : ''}`}>
-              <span className="scale-label">Maintenance</span>
+              <span className="scale-label" style={{ color: (result.summary.score >= 60 && result.summary.score < 70) ? '#FBBF24' : '' }}>Maintenance</span>
               <span className="scale-range">60–70</span>
             </div>
             <div className={`scale-box ${(result.summary.score >= 40 && result.summary.score < 60) ? 'active low' : ''}`}>
-              <span className="scale-label">Low</span>
+              <span className="scale-label" style={{ color: (result.summary.score >= 40 && result.summary.score < 60) ? 'var(--accent)' : '' }}>Low</span>
               <span className="scale-range">40–60</span>
             </div>
             <div className={`scale-box ${result.summary.score < 40 ? 'active poor' : ''}`}>
-              <span className="scale-label">Poor</span>
+              <span className="scale-label" style={{ color: result.summary.score < 40 ? 'var(--error)' : '' }}>Poor</span>
               <span className="scale-range">0–40</span>
             </div>
             
-            <button className="btn-secondary" style={{ marginTop: '24px' }} onClick={reset}>← Reset Engine</button>
+            <button className="btn-secondary" style={{ marginTop: '20px' }} onClick={reset}>← Reset Engine</button>
           </div>
 
           {/* CENTER PANEL: CORE STATE (HERO) */}
           <div className="panel-center" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0s', opacity: 0 }}>
+            <div className="header-logo compact" style={{ marginBottom: 0 }}>CORE</div>
+            
             <div className="donut-container" style={{ '--offset': 440 - (440 * result.summary.score) / 100 }}>
               <svg className="donut-svg" viewBox="0 0 160 160">
                 <defs>
@@ -252,25 +241,17 @@ export default function Home() {
                 <circle className="donut-bg" cx="80" cy="80" r="70" />
                 <circle className="donut-fill" cx="80" cy="80" r="70" />
               </svg>
-              <div className="hero-score">{displayScore}</div>
+              <div className="hero-score" style={{ position: 'absolute' }}>{displayScore}</div>
             </div>
 
-            <div style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.2s', opacity: 0 }}>
+            <div style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0s', opacity: 0 }}>
               <div className="hero-state">{result.summary.state}</div>
               <p className="hero-tagline">{result.summary.tagline}</p>
             </div>
 
-            <div className="hero-trend" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.3s', opacity: 0 }}>
-              Limiter: {result.summary.limiter}
-            </div>
-            
-            <div className="hero-confidence" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.4s', opacity: 0 }}>
-              {result.summary.confidence}
-            </div>
-            
-            <div className="hero-prediction" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.5s', opacity: 0 }}>
-              {result.summary.prediction}
-            </div>
+            <div className="hero-trend" style={{ marginTop: '10px', animation: 'fadeUp 0.6s ease forwards', animationDelay: '0s', opacity: 0 }}>Primary Limiter: {result.summary.limiter}</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.1em', animation: 'fadeUp 0.6s ease forwards', animationDelay: '0s', opacity: 0 }}>Confidence: {result.summary.confidence}</div>
+            <div style={{ fontSize: '12px', color: 'var(--accent)', marginTop: '12px', letterSpacing: '0.05em', animation: 'fadeUp 0.6s ease forwards', animationDelay: '0s', opacity: 0 }}>{result.summary.prediction}</div>
           </div>
 
           {/* RIGHT PANEL: PROFESSIONAL ANALYSIS */}
@@ -278,52 +259,24 @@ export default function Home() {
             
             <div className="analysis-section" style={{ animationDelay: '0.3s' }}>
               <div className="section-title">System Analysis</div>
-              
-              <div className="sys-metric">
-                <span className="sys-label">Energy</span>
-                <div className="sys-val-container">
-                  <span className="sys-val">{result.analysis.energy.val}</span>
-                  <span className="sys-explanation">({result.analysis.energy.explanation})</span>
-                </div>
-              </div>
-
-              <div className="sys-metric">
-                <span className="sys-label">Recovery</span>
-                <div className="sys-val-container">
-                  <span className="sys-val">{result.analysis.recovery.val}</span>
-                  <span className="sys-explanation">({result.analysis.recovery.explanation})</span>
-                </div>
-              </div>
-
-              <div className="sys-metric">
-                <span className="sys-label">Training</span>
-                <div className="sys-val-container">
-                  <span className="sys-val">{result.analysis.training.val}</span>
-                  <span className="sys-explanation">({result.analysis.training.explanation})</span>
-                </div>
-              </div>
-
-              <div className="sys-metric">
-                <span className="sys-label">Consistency</span>
-                <div className="sys-val-container">
-                  <span className="sys-val">{result.analysis.consistency.val}</span>
-                  <span className="sys-explanation">({result.analysis.consistency.explanation})</span>
-                </div>
-              </div>
+              <div className="sys-metric"><span className="sys-label">Energy</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.energy}</span></div>
+              <div className="sys-metric"><span className="sys-label">Recovery</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.recovery}</span></div>
+              <div className="sys-metric"><span className="sys-label">Training</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.training}</span></div>
+              <div className="sys-metric"><span className="sys-label">Consistency</span><span className="sys-val" style={{ textTransform: 'none' }}>{result.analysis.consistency}</span></div>
             </div>
 
-            <div className="analysis-section" style={{ animation: 'none', opacity: 1 }}>
-              <div className="section-title" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: '0.5s', opacity: 0 }}>Findings</div>
+            <div className="analysis-section" style={{ animationDelay: '0.5s' }}>
+              <div className="section-title">Findings</div>
               {result.findings.map((finding, idx) => (
-                <div key={idx} className="finding-item" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: `${0.6 + (idx * 0.15)}s`, opacity: 0 }}>
+                <div key={idx} className="finding-item" style={{ animation: 'fadeUp 0.6s ease forwards', animationDelay: `${0.5 + (idx * 0.1)}s`, opacity: 0 }}>
                   <div className={`indicator ${finding.type}`}></div>
                   <div className="finding-text">{finding.text}</div>
                 </div>
               ))}
             </div>
 
-            <div className="analysis-section" style={{ animationDelay: '1.2s', marginTop: 'auto' }}>
-              <div className="section-title">Critical Action</div>
+            <div className="analysis-section" style={{ animationDelay: '0.8s', marginTop: 'auto' }}>
+              <div className="section-title">Action</div>
               {result.actions.map((action, idx) => (
                 <div key={idx} className="action-item">{action}</div>
               ))}
@@ -335,7 +288,7 @@ export default function Home() {
 
       {/* VERSION FOOTER */}
       <div style={{ position: 'absolute', bottom: '15px', fontSize: '10px', color: 'rgba(255,255,255,0.2)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-        CORE v1.3
+        CORE v1.1
       </div>
     </main>
   );
