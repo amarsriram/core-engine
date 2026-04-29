@@ -56,7 +56,10 @@ export function analyzeHistory(sessions) {
   const totalSessions = uniqueSessions.length;
 
   // ── SCORES EXTRACTION ──
-  const scores = uniqueSessions.map(s => s.output?.summary?.score ?? 0);
+  const scores = uniqueSessions.map(s => {
+    const val = s.output?.summary?.score;
+    return (val !== undefined && val !== null) ? val : 0;
+  });
   const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
   // ── TREND DETECTION ──

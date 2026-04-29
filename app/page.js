@@ -30,7 +30,12 @@ export default function Home() {
     if (!uid) return;
     setLoadingSessions(true);
     try {
-      const q = query(collection(db, "users", uid, "sessions"), orderBy("createdAt", "desc"), limit(365));
+      const q = query(
+        collection(db, "sessions"), 
+        where("userId", "==", uid),
+        orderBy("createdAt", "desc"), 
+        limit(365)
+      );
       const snap = await getDocs(q);
       const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setSessions(data);
@@ -63,14 +68,16 @@ export default function Home() {
   }, [fetchSessions]);
 
   const handleLogin = async () => {
+    console.log("CORE: Triggering Google Sign-In...");
     setAuthError(null);
     try { 
-      await signInWithPopup(auth, googleProvider); 
+      const result = await signInWithPopup(auth, googleProvider); 
+      console.log("CORE: Sign-in success", result.user.email);
     } catch (e) { 
-      console.error(e);
+      console.error("CORE: Sign-in error:", e);
       const msg = e.code === 'auth/popup-closed-by-user' 
         ? "Sign-in popup was closed before completion." 
-        : (e.message || "Sign-in failed. Please check your connection.");
+        : (e.message || "Sign-in failed. Check if popups are blocked.");
       setAuthError(msg);
     }
   };
@@ -134,7 +141,8 @@ export default function Home() {
           endOfToday.setHours(23, 59, 59, 999);
 
           const q = query(
-            collection(db, "users", currentUser.uid, "sessions"),
+            collection(db, "sessions"),
+            where("userId", "==", currentUser.uid),
             where("createdAt", ">=", Timestamp.fromDate(startOfToday)),
             where("createdAt", "<=", Timestamp.fromDate(endOfToday)),
             limit(1)
@@ -154,16 +162,17 @@ export default function Home() {
             output: res,
             confidence: res.summary.confidence,
             primaryLimiter: res.summary.limiter,
+            userId: currentUser.uid, // Required for root collection filtering
             createdAt: serverTimestamp()
           };
 
           if (!existingSnap.empty) {
             // Replace existing session for today
             const existingId = existingSnap.docs[0].id;
-            await setDoc(doc(db, "users", currentUser.uid, "sessions", existingId), sessionData);
+            await setDoc(doc(db, "sessions", existingId), sessionData);
           } else {
             // Create new session
-            await addDoc(collection(db, "users", currentUser.uid, "sessions"), sessionData);
+            await addDoc(collection(db, "sessions"), sessionData);
           }
         } catch (error) {
           console.error("Error saving session:", error);
@@ -267,7 +276,11 @@ export default function Home() {
             </div>
 
             <div className="lih-graph-wrap">
-              {intelligence ? (
+              {loadingSessions ? (
+                <div className="lih-graph-empty shimmer">
+                  <div className="pulse-dot"></div>
+                </div>
+              ) : intelligence ? (
                 <DashboardTrendGraph 
                   key={graphRange}
                   data={
@@ -285,29 +298,29 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Historical Limiter Insight */}
-          <div className="lih-insight">
-            {intelligence?.limiterInsight ? (
-              <>
+          {/* Latest Insight Block */}
+          <div className="lih-insight-wrap" style={{ width: '100%' }}>
+            {loadingSessions ? (
+              <div className="lih-insight shimmer" style={{ minHeight: '100px', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}></div>
+            ) : intelligence && intelligence.totalSessions > 0 ? (
+              <div className="lih-insight">
+                <span className="lih-insight-badge">Latest Finding</span>
                 <div className="lih-insight-heading">
-                  {intelligence.limiterInsight.heading}
+                  {intelligence.limiterInsight?.heading || "Analyzing patterns..."}
                 </div>
                 <p className="lih-insight-desc">
-                  {intelligence.limiterInsight.description}
+                  {intelligence.limiterInsight?.description || "Establishing baseline metrics."}
                 </p>
-                {intelligence.limiterInsight.confidence === 'limited' && (
-                  <span className="lih-insight-badge">Based on limited data</span>
-                )}
-              </>
+              </div>
             ) : (
-              <>
+              <div className="lih-insight">
                 <div className="lih-insight-heading lih-insight-empty">
                   No pattern detected yet
                 </div>
                 <p className="lih-insight-desc">
-                  Run your first analysis to start uncovering what&#39;s limiting your progress.
+                  Run your first analysis to start uncovering what's limiting your progress.
                 </p>
-              </>
+              </div>
             )}
           </div>
 
