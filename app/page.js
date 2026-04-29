@@ -224,7 +224,7 @@ export default function Home() {
         <div className="reveal" style={{ width: '100%' }}>
           <section className="hero-section">
             <div className="header-logo large">CORE</div>
-            <h2 className="tagline">Know what's limiting you</h2>
+            <h2 className="tagline">Know what&apos;s limiting you</h2>
           </section>
 
           <section className="value-prop-section">
@@ -257,8 +257,15 @@ export default function Home() {
           {/* Brand */}
           <div className="lih-brand">
             <div className="header-logo large lih-logo">CORE</div>
-            <p className="tagline lih-tagline">Know what's limiting you</p>
-            <p className="lih-welcome">Welcome, <span>{user.displayName?.split(' ')[0] || 'Athlete'}</span></p>
+            <p className="tagline lih-tagline">Know what&apos;s limiting you</p>
+            <p className="lih-welcome">
+              Welcome, <span>{user.displayName?.split(' ')[0] || 'Athlete'}</span>, you are on a {intelligence?.streak || 0}-day streak
+            </p>
+            {intelligence && intelligence.trendDirection !== 0 && (
+              <p className="lih-trend-line" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginTop: '4px' }}>
+                {intelligence.trendDirection === 1 ? '↑' : '↓'} {Math.abs(intelligence.trendPercentage)}% {intelligence.trendDirection === 1 ? 'better' : 'worse'} than last week
+              </p>
+            )}
           </div>
 
           {/* Graph Toggles & 7-Day Trend Graph */}
@@ -318,7 +325,7 @@ export default function Home() {
                   No pattern detected yet
                 </div>
                 <p className="lih-insight-desc">
-                  Run your first analysis to start uncovering what's limiting your progress.
+                  Run your first analysis to start uncovering what&apos;s limiting your progress.
                 </p>
               </div>
             )}
@@ -328,7 +335,14 @@ export default function Home() {
           <div className="lih-cta-wrap">
             <button className="btn-cta lih-cta" onClick={() => setStep(1)}>
               <div className="liquid"></div>
-              <span>Run Analysis</span>
+              <span>{(() => {
+                if (!intelligence) return "START YOUR STREAK";
+                if (intelligence.streak >= 7) return "KEEP THE STREAK ALIVE";
+                if (intelligence.streak >= 3 && intelligence.streak <= 6) return "RUN ANALYSIS";
+                if (intelligence.trendDirection === 1) return "YOU'RE IMPROVING, RUN AGAIN";
+                if (intelligence.trendDirection === -1) return "TIME TO ANALYZE & IMPROVE";
+                return "START YOUR STREAK";
+              })()}</span>
             </button>
           </div>
 

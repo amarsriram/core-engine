@@ -113,6 +113,7 @@ export function analyzeHistory(sessions) {
   return {
     trend: trend.label,
     trendDirection: trend.direction,
+    trendPercentage: trend.percentage,
     streak,
     limiterFrequency,
     dominantLimiter,
@@ -133,21 +134,22 @@ export function analyzeHistory(sessions) {
 // ═══════════════════════════════════════════════════════
 
 function detectTrend(scores) {
-  if (scores.length < 2) return { label: 'Insufficient Data', direction: 0 };
+  if (scores.length < 2) return { label: 'Insufficient Data', direction: 0, percentage: 0 };
 
   const recentCount = Math.min(3, Math.floor(scores.length / 2));
   const recent = scores.slice(0, recentCount);
   const previous = scores.slice(recentCount, recentCount * 2);
 
-  if (previous.length === 0) return { label: 'Insufficient Data', direction: 0 };
+  if (previous.length === 0) return { label: 'Insufficient Data', direction: 0, percentage: 0 };
 
   const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
   const prevAvg = previous.reduce((a, b) => a + b, 0) / previous.length;
   const diff = recentAvg - prevAvg;
+  const percentage = prevAvg > 0 ? Math.round((diff / prevAvg) * 100) : 0;
 
-  if (diff > 5) return { label: 'Improving', direction: 1 };
-  if (diff < -5) return { label: 'Declining', direction: -1 };
-  return { label: 'Stable', direction: 0 };
+  if (diff > 5) return { label: 'Improving', direction: 1, percentage };
+  if (diff < -5) return { label: 'Declining', direction: -1, percentage };
+  return { label: 'Stable', direction: 0, percentage };
 }
 
 // ═══════════════════════════════════════════════════════
