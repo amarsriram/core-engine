@@ -24,6 +24,7 @@ export default function Home() {
   const [intelligence, setIntelligence] = useState(null);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [graphRange, setGraphRange] = useState('week'); // 'week', 'month', 'year'
+  const [authError, setAuthError] = useState(null);
 
   const fetchSessions = useCallback(async (uid) => {
     if (!uid) return;
@@ -62,7 +63,13 @@ export default function Home() {
   }, [fetchSessions]);
 
   const handleLogin = async () => {
-    try { await signInWithPopup(auth, googleProvider); } catch (e) { console.error(e); }
+    setAuthError(null);
+    try { 
+      await signInWithPopup(auth, googleProvider); 
+    } catch (e) { 
+      console.error(e);
+      setAuthError("Sign-in was cancelled or failed. Please try again.");
+    }
   };
   const handleLogout = async () => {
     try { await signOut(auth); } catch (e) { console.error(e); }
@@ -96,10 +103,12 @@ export default function Home() {
     let currentUser = user;
     if (!currentUser) {
       try {
+        setAuthError(null);
         const authResult = await signInWithPopup(auth, googleProvider);
         currentUser = authResult.user;
       } catch (error) {
         console.error("Authentication required:", error);
+        setAuthError("Identity verification required to save analysis.");
         return;
       }
     }
@@ -183,6 +192,17 @@ export default function Home() {
     <main className="container">
       <div className="bg-system"><div className="energy-glow"></div></div>
       <div className="bg-overlay"></div>
+      
+      {/* Auth Error Banner */}
+      {authError && (
+        <div className="auth-error-banner" onClick={() => setAuthError(null)}>
+          <div className="aeb-content">
+            <span className="aeb-icon">!</span>
+            <p>{authError}</p>
+          </div>
+          <button className="aeb-close">×</button>
+        </div>
+      )}
 
       {/* ── LANDING (STEP 0) ── */}
       {step === 0 && !user && (
