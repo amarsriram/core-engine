@@ -68,7 +68,10 @@ export default function Home() {
       await signInWithPopup(auth, googleProvider); 
     } catch (e) { 
       console.error(e);
-      setAuthError("Sign-in was cancelled or failed. Please try again.");
+      const msg = e.code === 'auth/popup-closed-by-user' 
+        ? "Sign-in popup was closed before completion." 
+        : (e.message || "Sign-in failed. Please check your connection.");
+      setAuthError(msg);
     }
   };
   const handleLogout = async () => {
@@ -108,7 +111,10 @@ export default function Home() {
         currentUser = authResult.user;
       } catch (error) {
         console.error("Authentication required:", error);
-        setAuthError("Identity verification required to save analysis.");
+        const msg = error.code === 'auth/popup-closed-by-user'
+          ? "Identity verification cancelled."
+          : (error.message || "Failed to verify identity.");
+        setAuthError(msg);
         return;
       }
     }
