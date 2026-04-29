@@ -159,8 +159,6 @@ function detectTrend(scores) {
 function calculateStreak(sortedSessions) {
   if (!sortedSessions || sortedSessions.length === 0) return 0;
   
-  let streak = 0;
-  
   const getDateString = (sec) => {
     const d = new Date(sec * 1000);
     return new Intl.DateTimeFormat('en-GB', {
@@ -170,11 +168,9 @@ function calculateStreak(sortedSessions) {
   };
 
   const uniqueDays = [];
-  
   for (const session of sortedSessions) {
     if (!session.createdAt) continue;
     const dateStr = getDateString(session.createdAt.seconds);
-    
     if (uniqueDays.length === 0 || uniqueDays[uniqueDays.length - 1].dateStr !== dateStr) {
       uniqueDays.push({
         dateStr,
@@ -184,27 +180,44 @@ function calculateStreak(sortedSessions) {
     }
   }
 
+  if (uniqueDays.length === 0) return 0;
+
+  // 1. Check if the streak is still "live" (latest session must be today or yesterday)
+  const now = getISTNow();
+  now.setHours(0, 0, 0, 0);
+  
+  const latestIST = toISTDate({ seconds: uniqueDays[0].seconds });
+  latestIST.setHours(0, 0, 0, 0);
+  
+  const dayDiff = Math.round(Math.abs(now - latestIST) / (1000 * 60 * 60 * 24));
+  
+  // If latest session is more than 1 day ago, streak is broken
+  if (dayDiff > 1) return 0;
+
+  let streak = 0;
   for (let i = 0; i < uniqueDays.length; i++) {
     const day = uniqueDays[i];
     
+    // Streak condition: Score must be >= 60 (Adjustable threshold)
     if (day.score >= 60) {
       streak++;
     } else {
+      // If we encounter a day < 60, the streak from "now" backwards is broken
       break; 
     }
 
+    // Check gap between this session and the previous one (in the past)
     if (i < uniqueDays.length - 1) {
-      const currentDay = new Date(day.seconds * 1000);
+      const currentDay = toISTDate({ seconds: day.seconds });
       currentDay.setHours(0, 0, 0, 0);
       
-      const nextDay = new Date(uniqueDays[i+1].seconds * 1000);
-      nextDay.setHours(0, 0, 0, 0);
+      const prevDay = toISTDate({ seconds: uniqueDays[i+1].seconds });
+      prevDay.setHours(0, 0, 0, 0);
       
-      const diffTime = Math.abs(currentDay - nextDay);
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      const gap = Math.round(Math.abs(currentDay - prevDay) / (1000 * 60 * 60 * 24));
       
-      if (diffDays > 1) {
-        break;
+      if (gap > 1) {
+        break; // Gap detected, streak stops here
       }
     }
   }
