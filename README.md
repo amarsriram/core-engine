@@ -1,36 +1,195 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+CORE Engine
 
-## Getting Started
+CORE is a biological performance decision system that analyzes user inputs and identifies what is limiting performance.
 
-First, run the development server:
+---
 
-```bash
+🚀 Overview
+
+CORE takes daily biological inputs and converts them into:
+
+- Performance Score (0–100)
+- System State (Optimal / Moderate / Low)
+- Primary Limiter (Energy / Recovery / Consistency / Training)
+- Actionable Insight
+- Stored history for tracking progress
+
+---
+
+🧠 Core Idea
+
+Most apps show data.
+
+CORE:
+→ Interprets data
+→ Finds the limiting factor
+→ Guides decisions
+
+---
+
+⚙️ Features
+
+- Google Authentication (Firebase)
+- Input-based biological analysis
+- Real-time scoring engine
+- Firestore database integration
+- Session history tracking
+- Dashboard with trends and limiter patterns
+- Minimal UI focused on decision-making
+
+---
+
+🏗️ Tech Stack
+
+Frontend
+
+- Next.js (App Router)
+- React
+- Custom CSS
+
+Backend / Services
+
+- Firebase Authentication (Google Sign-In)
+- Firestore Database
+
+Deployment
+
+- Vercel
+
+---
+
+🔐 Environment Variables
+
+Create a ".env.local" file in root:
+
+NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_WEB_API_KEY
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=xxxxx
+NEXT_PUBLIC_FIREBASE_APP_ID=1:xxxxx:web:xxxxx
+
+⚠️ Use values from Firebase → Project Settings → Web App
+Do NOT use Google Cloud API keys.
+
+---
+
+🗄️ Firestore Structure
+
+users/{uid}
+  - name
+  - email
+  - createdAt
+
+sessions/{sessionId}
+  - userId
+  - inputs
+  - output
+  - primaryLimiter
+  - confidence
+  - createdAt
+
+---
+
+🔒 Firestore Rules (Production)
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+---
+
+🔄 User Flow
+
+1. User opens CORE
+2. Clicks Find My Limiter
+3. Logs in with Google
+4. Enters biological inputs
+5. CORE analyzes data
+6. Result is shown
+7. Session is saved
+8. User can view history & dashboard
+
+---
+
+📊 Product Vision
+
+CORE is not a fitness tracker.
+
+It is:
+→ A biological operating system
+→ A decision engine
+→ A pattern recognition system over time
+
+---
+
+⚠️ Important Notes
+
+- API key must come from Firebase Web App config
+- Do not hardcode secrets
+- Always use environment variables
+- Firestore rules must be secured before production
+
+---
+
+📦 Installation
+
+git clone https://github.com/your-username/core-engine.git
+cd core-engine
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+🚀 Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Deploy using Vercel:
 
-## Learn More
+1. Add environment variables in Vercel
+2. Redeploy
+3. Ensure Firebase domains include your Vercel URL
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🧪 Status
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Version: V3+
 
-## Deploy on Vercel
+- Auth: ✅
+- Analysis Engine: ✅
+- Firestore Integration: ✅
+- Dashboard: ✅
+- Production Setup: ⚠️ (requires proper rules + env config)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+🧠 Philosophy
+
+CORE focuses on:
+
+- Clarity over complexity
+- Insight over data
+- Action over tracking
+
+---
+
+📌 Author
+
+Amar Sriram
+
+---
